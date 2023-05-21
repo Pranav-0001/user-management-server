@@ -12,6 +12,11 @@ app.listen(5000,()=>{
 
 app.use(cookieParser())
 app.use(express.json());
+app.use(cors({
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST"],
+    credentials: true
+}))
 
 mongoose.connect("mongodb://127.0.0.1:27017/user-management", {
     useNewUrlParser: true,
