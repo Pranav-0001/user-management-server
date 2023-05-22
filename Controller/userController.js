@@ -27,6 +27,19 @@ const handleErrors = (err) => {
 const register = async (req, res, next) => {
     try {
         let { username, password } = req.body
+        const namereg = /^[^\s][\w\W]+$/gm;
+        const passreg = /^[^\s][\w\W]+$/gm;
+        if(namereg.test(username)==false){
+            const errors={}
+            errors.username='enter a valid username'
+            res.json({ errors, created: false })
+        }else if(passreg.test(password)==false){
+            const errors={}
+            errors.username='enter a valid password'
+            res.json({ errors, created: false })
+        }
+        else{
+            
         password =  password ?  await bcrypt.hash(password, 10) :null;
         userDB.insertMany([{ username, password }]).then((data) => {
             res.status(201).json({ user: data.insertedId, created: true })
@@ -35,6 +48,8 @@ const register = async (req, res, next) => {
             const errors=handleErrors(err)
             res.json({ errors, created: false })
         })
+        }
+        
     }
     catch (error) {
        
@@ -114,10 +129,13 @@ const imageUpload= (req,res,next)=>{
     }
 }
 
+
+
 module.exports = {
     register,
     Login,
     auth,
     getUsers,
-    imageUpload
+    imageUpload,
+  
 }

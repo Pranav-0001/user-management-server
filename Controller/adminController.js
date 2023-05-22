@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const adminDB = require('../Model/adminModel')
 const userDB = require('../Model/userModel')
 const jwt = require('jsonwebtoken')
-const { json } = require('express')
+
 
 
 const login = async (req, res, next) => {
@@ -74,9 +74,81 @@ const deleteuser = (req,res,next) =>{
    
     
 }
+const addUser =async(req,res,next)=>{
+    try{
+        const namereg = /^[^\s][\w\W]+$/gm;
+        const passreg = /^[^\s][\w\W]+$/gm;
+        const errors={}
+        let {username,password}=req.body
+
+        if(!username){
+            errors.password="Username required"
+            res.json({errors})
+        }
+        else if(!password){
+            errors.password="Password required"
+            res.json({errors})
+        }
+        
+        else if(namereg.test(username)==false){
+            errors.password="enter a valid username"
+            res.json({errors})
+        }
+        else if(passreg.test(password)==false){
+            errors.password="enter a valid password"
+            res.json({errors})
+        }else{ 
+            password=await bcrypt.hash(password, 10)
+            userDB.insertMany([{username,password}]).then(()=>{
+                res.json({status:true})
+            }).catch(err=>{
+                console.log(err.code);
+                if(err.code==11000){
+                    errors.username='username already taken'
+                    res.json({errors})
+                }
+            })
+            
+        }
+    }catch(err){
+
+    }
+}
+const editUser=(req,res,next)=>{
+    try{
+        const namereg = /^[^\s][\w\W]+$/gm;
+         const {username,id} = req.body
+         const errors = {}
+        if(username==''){
+            errors.username='Enter a username'
+            res.json({errors})
+        }else if(namereg.test(username)==false){
+            errors.username='Enter a valid username'
+            res.json({errors})
+        }
+        else{
+            userDB.updateOne({_id:id},{$set:{
+            username:username
+         }}).then(resu=>{
+            console.log(resu);
+            res.json({update:true})
+         }).catch(err=>{
+            if(err.code==11000){
+                errors.username='Username already taken'
+                res.json({errors})
+            }
+         })
+        }
+         
+    }catch(err){
+        console.log(err);
+    }
+}
 
 module.exports = {
     login,
     auth,
-    deleteuser
+    deleteuser,
+    addUser,
+    editUser
 }
